@@ -1,19 +1,27 @@
 const express = require('express');
-const contactsController  = require('../../controllers/contacts');
-const { validateBody, isValidId } = require('../../middlewares');
-const { schemas } = require('../../models/contacts');
+
+
 const router = express.Router();
+const contactsController  = require('../../controllers/contacts');
+const {validateBody, isValidId, authenticate} = require("../../middlewares/index");
+const  { schemas }  = require("../../models/contacts");
 
-router.get('/', contactsController.getAll);
 
-router.get('/:contactId', isValidId, contactsController.getById);
+router.get('/', authenticate, contactsController.getAll);
 
-router.post('/', validateBody(schemas.addSchema), contactsController.add);
+router.get('/:contactId', authenticate, isValidId, contactsController.getById);
 
-router.put('/:contactId', isValidId, validateBody(schemas.addSchema), contactsController.updateById);
+router.post('/',authenticate, validateBody(
+    schemas.addSchema), contactsController.add);
 
-router.patch('/:contactId/favorite', isValidId, validateBody(schemas.updateFavoriteSchema), contactsController.updateFavorite);
+router.put('/:contactId',authenticate, isValidId, validateBody(
+    schemas.addSchema), contactsController.updateById);
 
-router.delete('/:contactId', isValidId, contactsController.deleteById);
+router.patch('/:contactId/favorite', authenticate, isValidId, validateBody(
+    schemas.updateFavoriteSchema), contactsController.updateFavorite);
+
+router.delete("/:contactId",authenticate, isValidId, contactsController.deleteById);
+
+
 
 module.exports = router;
