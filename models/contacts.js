@@ -45,7 +45,7 @@ const updateFavoriteSchema = Joi.object({
 })
 
 
-const Contact = model("db-contacts", contactSchema);
+const Contact = model("contacts", contactSchema);
 const schemas = { addSchema, updateFavoriteSchema };
 
 module.exports = {Contact, schemas};
