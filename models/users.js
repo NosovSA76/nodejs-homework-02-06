@@ -1,60 +1,59 @@
-const { Schema, model } = require("mongoose");
-const Joi = require("joi");
-const { handleMongooseError } = require("../helpers/index");
+const { Schema, model } = require('mongoose');
+const Joi = require('joi');
+const { handleMongooseError } = require('../helpers');
+const emailRegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-
-// const emailRegexp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-const emailRegexp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-
-const userSchema = new Schema ({
-    username: {
-        type: String,
-        required: [true, "User name is required"]
+const userSchema = new Schema(
+  {
+    password: {
+      type: String,
+      minlength: 6,
+      required: [true, 'Password is required!'],
     },
     email: {
-        type: String,
-        match: emailRegexp,
-        unique: true,
-        required: [true, "Email is required"]
-    },
-    password: {
-        type: String,
-        minlength: 6,
-        required: [true, "Set password for the user"],
-
+      type: String,
+      match: emailRegExp,
+      unique: true,
+      required: [true, 'Email is required!'],
     },
     subscription: {
-        type: String,
-        enum: ["starter", "pro", "business"],
-        default: "starter",
+      type: String,
+      enum: ['starter', 'pro', 'business'],
+      default: 'starter',
     },
     token: {
-        type: String,
-        default: null,
+      type: String,
+      default: null,
     },
+    avatarUrl: {
+      type: String,
+      required: true,
+    },
+  },
+  { versionKey: false, timestamps: true }
+);
 
-}, {versionKey:false, timestamps: true});
-
-
-userSchema.post("save", handleMongooseError);
-
+userSchema.post('save', handleMongooseError);
 
 const registerSchema = Joi.object({
-    username: Joi.string().required(),
-    email: Joi.string().pattern(emailRegexp).required(),
-    password: Joi.string().min(6).required()
+  password: Joi.string().required().messages({ 'any.required': 'missing required password field' }),
+  email: Joi.string().pattern(emailRegExp).messages({ 'string.pattern.base': 'wrong email format!' }),
+  subscription: Joi.string().valid('starter', 'pro', 'business').messages({ 'any.only': 'You can use only (starter, pro, business) values!' }),
+  // avatarUrl: Joi.string(),
 });
-
 
 const loginSchema = Joi.object({
-    email: Joi.string().pattern(emailRegexp).required(),
-    password: Joi.string().min(6).required()
+  email: Joi.string().pattern(emailRegExp).messages({ 'string.pattern.base': 'wrong email format!' }),
+  password: Joi.string().required().messages({ 'any.required': 'missing required password field' }),
 });
 
+const schemas = {
+  registerSchema,
+  loginSchema,
+};
+const User = model('user', userSchema);
 
-const schemas = { registerSchema, loginSchema};
-const User = model("users", userSchema);
-
-
-module.exports = {schemas, User};
+module.exports = {
+  User,
+  schemas,
+};
